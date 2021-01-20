@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { initSeed } from '../../src/database/seeder';
+import { User } from '../../src/models/User';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 600000;
 let mongoServer: MongoMemoryServer;
@@ -22,6 +23,7 @@ export default {
 
     await mongoose.disconnect();
     await mongoose.connect(uri, mongooseOpts);
+    await User.ensureIndexes();
     await initSeed();
   },
 

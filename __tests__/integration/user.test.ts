@@ -22,6 +22,21 @@ describe('Register user', () => {
     const { status } = await request(app).post('/user').send();
     expect(status).toBe(401);
   });
+  
+  it('Should fail with 401 token error', async () => {
+    const { body } = await request(app).post('/user').set({ Authorization: `${token}` }).send();
+    expect(body.error).toBe('Token error');
+  });
+  
+  it('Should fail with 401 token error', async () => {
+    const { body } = await request(app).post('/user').set({ Authorization: `token ${token}` }).send();
+    expect(body.error).toBe('Token malformatted');
+  });
+  
+  it('Should fail with 401 token error', async () => {
+    const { body } = await request(app).post('/user').set({ Authorization: `Bearer token` }).send();
+    expect(body.error).toBe('Token invalid');
+  });
 
   it('Should fail without any fields', async () => {
     const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send();
@@ -48,5 +63,12 @@ describe('Register user', () => {
     const { status, body } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userGenerated);
     expect(status).toBe(200);
     expect(body.user.name).toBe(userGenerated.name);
+  });
+
+  it('Should receive an registration failed', async () => {
+    const userGenerated = generateUser();
+    await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userGenerated);
+    const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userGenerated);
+    expect(status).toBe(400);
   });
 });

@@ -14,20 +14,19 @@ const SeederSchema = new mongoose.Schema<ISeeder>({
   }
 });
 
-const Seeder = mongoose.model<ISeeder>('Seeder', SeederSchema);
+export const Seeder = mongoose.model<ISeeder>('Seeder', SeederSchema);
 
 export function initSeed() {
   return new Promise(async (resolve, reject) => {
     const isSeeded = await Seeder.exists({});
-    if (!isSeeded) {
-      try {
-        await User.create(user);
-        const seeder = await Seeder.create({});
-        resolve(seeder);
-      } catch (error) {
-        console.error('init seed', error);
-        reject();
-      }
+    if (isSeeded)
+      resolve(null);
+    try {
+      await User.create(user);
+      const seeder = await Seeder.create({});
+      resolve(seeder);
+    } catch (error) {
+      reject(error);
     }
   })
 }

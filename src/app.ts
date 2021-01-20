@@ -19,6 +19,6 @@ app.use(express.json());
 app.use('/authentication', authenticationRouter);
 app.use('/user', userRouter);
 
-initSeed();
+// initSeed();
 
 export default app;
