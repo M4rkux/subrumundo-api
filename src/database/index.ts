@@ -5,7 +5,7 @@ mongoose.connect(`mongodb://${config.username}:${config.password}@${config.host}
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useFindAndModify: true,
+    useFindAndModify: false,
     useCreateIndex: true
   }
 );
