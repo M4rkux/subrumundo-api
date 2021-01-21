@@ -2,13 +2,12 @@ import request from 'supertest';
 import app from '../../src/app';
 import dbHandler from '../utils/dbHandler';
 import  * as defaultUser from '../../src/database/seeder/data-to-seed/user.json';
+import { initSeed } from '../../src/database/seeder';
 
 beforeAll(async () => await dbHandler.connect());
-
-afterAll(async () => {
-  await dbHandler.clearDatabase();
-  await dbHandler.closeDatabase();
-});
+beforeEach(async () => await initSeed());
+afterEach(async () => await dbHandler.clearDatabase());
+afterAll(async () => await dbHandler.closeDatabase());
 
 describe('Test the login', () => {
   it('Should fail on login without parameters', async () => {

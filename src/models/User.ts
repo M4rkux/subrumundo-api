@@ -10,6 +10,11 @@ export interface IUser extends Document {
   createdAt?: Date;
 }
 
+export interface IUserQuery {
+  name?: RegExp;
+  email?: RegExp;
+}
+
 export interface IUserView extends Document {
   name: string;
   email: string;

@@ -27,9 +27,6 @@ export default {
     await initSeed();
   },
 
-  /**
-   * Drop database, close the connection and stop mongod.
-   */
   closeDatabase: async () => {
     await mongoose.connection.dropDatabase();
     await mongoose.connection.close();

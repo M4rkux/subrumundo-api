@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { User, UserView } from '../models/User';
+import { LIMIT } from '../constants';
+import { User, UserView, IUser, IUserQuery } from '../models/User';
 
 export async function register(req: Request, res: Response) {
 
@@ -17,6 +18,26 @@ export async function register(req: Request, res: Response) {
     return res.status(400).send({ error: 'Registration failed' });
   }
 
+}
+
+export async function list(req: Request, res: Response) {
+
+  const q = req.query.q?.toString();
+  const page = Number(req.query.page) <= 0 ? 1 : Number(req.query.page);
+  const skip = (page - 1) * LIMIT;
+
+  let query = {};
+  let $or: IUserQuery[] = [];
+  if (q) {
+    $or.push({name: new RegExp(q, 'i')});
+    $or.push({email: new RegExp(q, 'i')});
+    query = {$or};
+  }
+
+  const users = await User.find(query).limit(LIMIT).skip(skip);
+  return res.status(200).send({
+    users : users.map((user: IUser) => UserView.render(user))
+  });
 }
 
 function _verifyMandatoryFields(email: string, name: string, password: string) {
