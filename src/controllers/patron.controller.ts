@@ -3,10 +3,11 @@ import { isValidObjectId } from 'mongoose';
 import { LIMIT } from '../constants';
 import { IPatron, IPatronQuery, Patron, PatronView } from '../models/Patron';
 import { Subscriber } from '../models/Subscriber';
+import { verifyMandatoryFields } from '../utils/fields';
 
 export async function register(req: Request, res: Response) {
   const { email } = req.body;
-  const fieldError = _verifyMandatoryFields(email);
+  const fieldError = verifyMandatoryFields({ email });
   if (fieldError)
     return res.status(400).send({ error: fieldError });
 
@@ -75,11 +76,4 @@ export async function deleteOne(req: Request, res: Response) {
     patron: PatronView.render(patron)
   });
 
-}
-
-function _verifyMandatoryFields(email: string) {
-  if (!email)
-    return 'Email is a mandatory field';
-
-  return null;
 }

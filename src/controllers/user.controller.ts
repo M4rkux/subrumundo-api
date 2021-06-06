@@ -2,11 +2,12 @@ import { Request, Response } from 'express';
 import { isValidObjectId } from 'mongoose';
 import { LIMIT } from '../constants';
 import { User, UserView, IUser, IUserQuery } from '../models/User';
+import { verifyMandatoryFields } from '../utils/fields';
 
 export async function register(req: Request, res: Response) {
 
   const { email, name, password } = req.body;
-  const fieldError = _verifyMandatoryFields(email, name, password);
+  const fieldError = verifyMandatoryFields({ email, name, password });
   if (fieldError)
     return res.status(400).send({ error: fieldError });
 
@@ -100,17 +101,4 @@ export async function updateOne(req: Request, res: Response) {
     user: UserView.render(user)
   });
 
-}
-
-function _verifyMandatoryFields(email: string, name: string, password: string) {
-  if (!email)
-    return 'Email is a mandatory field';
-
-  if (!name)
-    return 'Name is a mandatory field';
-
-  if (!password)
-    return 'Password is a mandatory field';
-
-  return null;
 }

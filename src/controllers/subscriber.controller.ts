@@ -3,10 +3,11 @@ import { isValidObjectId } from 'mongoose';
 import { LIMIT } from '../constants';
 import { Patron } from '../models/Patron';
 import { ISubscriber, ISubscriberQuery, Subscriber, SubscriberView } from '../models/Subscriber';
+import { verifyMandatoryFields } from '../utils/fields';
 
 export async function register(req: Request, res: Response) {
   const { email, name, googleId } = req.body;
-  const fieldError = _verifyMandatoryFields(email, name, googleId);
+  const fieldError = verifyMandatoryFields({ email, name, googleId });
   if (fieldError)
     return res.status(400).send({ error: fieldError });
 
@@ -58,17 +59,4 @@ export async function getOne(req: Request, res: Response) {
     subscriber: SubscriberView.render(subscriber)
   });
 
-}
-
-function _verifyMandatoryFields(email: string, name: string, googleId: string) {
-  if (!email)
-    return 'Email is a mandatory field';
-
-  if (!name)
-    return 'Name is a mandatory field';
-
-  if (!googleId)
-    return 'GoogleId is a mandatory field';
-
-  return null;
 }
