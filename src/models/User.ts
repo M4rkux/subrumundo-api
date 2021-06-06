@@ -62,7 +62,12 @@ const UserSchema = new mongoose.Schema<IUser>({
 UserSchema.pre<IUser>('save', async function (next) {
   const hash = await bcrypt.hash(this.password, 10);
   this.password = hash;
+  this.updatedAt = new Date();
   next(null);
+});
+
+UserSchema.pre<IUser>('updateOne', async function () {
+  this.set({ updatedAt: new Date() });
 });
 
 export const User = mongoose.model<IUser>('User', UserSchema);

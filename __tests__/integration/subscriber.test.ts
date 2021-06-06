@@ -29,12 +29,12 @@ describe('Test subscriber authentications', () => {
     const { body } = await request(app).get('/subscriber').set({ Authorization: `${token}` }).send();
     expect(body.error).toBe('Token error');
   });
-  
+
   it('Should fail with 401 token error', async () => {
     const { body } = await request(app).get('/subscriber').set({ Authorization: `token ${token}` }).send();
     expect(body.error).toBe('Token malformatted');
   });
-  
+
   it('Should fail with 401 token error', async () => {
     const { body } = await request(app).get('/subscriber').set({ Authorization: `Bearer token` }).send();
     expect(body.error).toBe('Token invalid');
@@ -48,17 +48,17 @@ describe('Test subscriber registry', () => {
     expect(status).toBe(400);
   });
   it('Should fail without email', async () => {
-    const { status } = await request(app).post('/subscriber').set({ Authorization: `Bearer ${token}` }).send({name: 'name1', googleId: 'abcd123'});
+    const { status } = await request(app).post('/subscriber').set({ Authorization: `Bearer ${token}` }).send({ name: 'name1', googleId: 'abcd123' });
     expect(status).toBe(400);
   });
 
   it('Should fail without name', async () => {
-    const { status } = await request(app).post('/subscriber').set({ Authorization: `Bearer ${token}` }).send({email: 'name2@email.com', googleId: 'abcd123'});
+    const { status } = await request(app).post('/subscriber').set({ Authorization: `Bearer ${token}` }).send({ email: 'name2@email.com', googleId: 'abcd123' });
     expect(status).toBe(400);
   });
-  
-  it('Should fail without password', async () => {
-    const { status } = await request(app).post('/subscriber').set({ Authorization: `Bearer ${token}` }).send({name: 'name3', email: 'email3@email.com'});
+
+  it('Should fail without googleId', async () => {
+    const { status } = await request(app).post('/subscriber').set({ Authorization: `Bearer ${token}` }).send({ name: 'name3', email: 'email3@email.com' });
     expect(status).toBe(400);
   });
 
@@ -75,13 +75,26 @@ describe('Test subscriber registry', () => {
     const { status } = await request(app).post('/subscriber').set({ Authorization: `Bearer ${token}` }).send(subscriberGenerated);
     expect(status).toBe(400);
   });
+
+  it('Should register the subscriber and verify if isPatron is false', async () => {
+    const subscriberGenerated = generateSubscriber();
+    const { body: { subscriber } } = await request(app).post('/subscriber').set({ Authorization: `Bearer ${token}` }).send(subscriberGenerated);
+    expect(subscriber.isPatron).toBe(false);
+  });
+
+  it('Should register the subscriber that is patron and verify if isPatron is true', async () => {
+    const subscriberGenerated = generateSubscriber();
+    await request(app).post('/patron').set({ Authorization: `Bearer ${token}` }).send({ email: subscriberGenerated.email });
+    const { body: { subscriber } } = await request(app).post('/subscriber').set({ Authorization: `Bearer ${token}` }).send(subscriberGenerated);
+    expect(subscriber.isPatron).toBe(true);
+  });
 });
 
 describe('Test subscriber registry', () => {
   /** Test list */
   it('Should get the subscriber list', async () => {
     const { body } = await request(app).get('/subscriber').set({ Authorization: `Bearer ${token}` }).send();
-    expect(body.subscribers.length).toBe(2);
+    expect(body.subscribers.length).toBe(4);
   });
 
   it('Should get the 10 first subscribers', async () => {
@@ -100,7 +113,7 @@ describe('Test subscriber registry', () => {
 
   it('Should skip 10 first subscribers and get the 3 left', async () => {
     const { body } = await request(app).get('/subscriber?page=2').set({ Authorization: `Bearer ${token}` }).send();
-    expect(body.subscribers.length).toBe(2);
+    expect(body.subscribers.length).toBe(4);
   });
 
   it('Should return an empty array', async () => {
@@ -135,14 +148,12 @@ describe('Test get Subscriber', () => {
     const { body } = await request(app).get(`/subscriber?q=${subscriberGeneratedGlobally.name}`).set({ Authorization: `Bearer ${token}` }).send();
     const [subscriberToFind] = body.subscribers;
     subscriberGeneratedGlobally.id = subscriberToFind.id;
-    const data = await request(app).get(`/subscriber/${subscriberToFind.id}`).set({ Authorization: `Bearer ${token}` }).send();
-    const { subscriber } = data.body;
+    const { body: { subscriber } } = await request(app).get(`/subscriber/${subscriberToFind.id}`).set({ Authorization: `Bearer ${token}` }).send();
     expect(subscriber.name).toBe(subscriberToFind.name);
   });
 
   it('Should not find the subscriber by id', async () => {
-    const data = await request(app).get(`/subscriber/aaaabbbbccccddd1111`).set({ Authorization: `Bearer ${token}` }).send();
-    const { subscriber } = data.body;
+    const { body: { subscriber } } = await request(app).get(`/subscriber/aaaabbbbccccddd1111`).set({ Authorization: `Bearer ${token}` }).send();
     expect(subscriber).toBeFalsy();
   });
 

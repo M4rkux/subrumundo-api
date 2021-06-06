@@ -17,3 +17,10 @@ export function generateSubscriber() {
     googleId: faker.random.uuid(),
   };
 }
+
+export function generatePatron() {
+  return {
+    id: undefined,
+    email: faker.internet.email().toLowerCase(),
+  };
+}

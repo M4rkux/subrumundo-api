@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { isValidObjectId } from 'mongoose';
 import { LIMIT } from '../constants';
+import { Patron } from '../models/Patron';
 import { ISubscriber, ISubscriberQuery, Subscriber, SubscriberView } from '../models/Subscriber';
 
 export async function register(req: Request, res: Response) {
@@ -10,7 +11,8 @@ export async function register(req: Request, res: Response) {
     return res.status(400).send({ error: fieldError });
 
   try {
-    const subscriber = await Subscriber.create({ email, name, googleId });
+    const isPatron = !!(await Patron.findOne({ email }));
+    const subscriber = await Subscriber.create({ email, name, googleId, isPatron });
     return res.status(200).send({
       subscriber: SubscriberView.render(subscriber)
     });

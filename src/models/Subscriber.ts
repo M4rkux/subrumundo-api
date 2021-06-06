@@ -68,4 +68,9 @@ const SubscriberSchema = new mongoose.Schema<ISubscriber>({
   },
 });
 
+SubscriberSchema.pre<ISubscriber>('updateOne', async function () {
+  this.set({ updatedAt: new Date() });
+});
+
+
 export const Subscriber = mongoose.model<ISubscriber>('Subscriber', SubscriberSchema);
