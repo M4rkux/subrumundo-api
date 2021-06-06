@@ -10,18 +10,18 @@ yarn install
 docker-compose -f docker/mongo.yml up -d
 ```
 
-### Compiles for development
+## Compiles for development
 ```
 yarn dev
 ```
 
-### Run unit tests
+## Run unit tests
 ```
 yarn test
 ```
 
-### Stack
-#### This project is using:
+## Stack
+### This project is using:
  - TypeScript
  - Express
  - MongoDB (inside docker)
