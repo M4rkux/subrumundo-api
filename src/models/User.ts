@@ -8,6 +8,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface IUserQuery {
@@ -49,6 +50,10 @@ const UserSchema = new mongoose.Schema<IUser>({
     select: false,
   },
   createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
     type: Date,
     default: Date.now,
   }

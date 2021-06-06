@@ -8,7 +8,7 @@ afterAll(async () => {
   await dbHandler.closeDatabase();
 });
 
-describe('Test the login', () => {
+describe('Test the seed', () => {
   it('Should not do anything if it\'s already seeded', async () => {
     const result = await initSeed();
     expect(result).toBeFalsy();

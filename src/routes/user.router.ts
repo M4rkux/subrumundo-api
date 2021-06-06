@@ -5,8 +5,8 @@ import auth from '../middlewares/auth';
 const router = Router();
 
 router.post('/', auth, register);
-router.get('/:id', auth, getOne);
 router.get('/', auth, list);
+router.get('/:id', auth, getOne);
 router.delete('/:id', auth, deleteOne);
 router.put('/:id', auth, updateOne);
 

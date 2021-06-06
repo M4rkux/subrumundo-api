@@ -1,14 +1,15 @@
 import request from 'supertest';
 import app from '../../src/app';
-import generateUser from '../factories';
+import { generateUser } from '../factories';
 import dbHandler from '../utils/dbHandler';
-import  * as defaultUser from '../../src/database/seeder/data-to-seed/user.json';
+import * as defaultUser from '../../src/database/seeder/data-to-seed/user.json';
 
+const userGeneratedGlobally = generateUser();
 let token = '';
 
 beforeAll(async () => {
   await dbHandler.connect();
-  const { body } = await request(app).post('/authentication/login').send({ email: defaultUser.email, password: defaultUser.password});
+  const { body } = await request(app).post('/authentication/login').send({ email: defaultUser.email, password: defaultUser.password });
   token = body.token;
 });
 
@@ -17,35 +18,30 @@ afterAll(async () => {
   await dbHandler.closeDatabase();
 });
 
-const userManuallyGenerated = {
-  id: undefined,
-  name: 'newusertobefound',
-  email: 'wonderful@email.com',
-  password: '123'
-};
-
-describe('Register user', () => {
+describe('Test User authentications', () => {
   /** Test authentications */
   it('Should fail with 401', async () => {
     const { status } = await request(app).post('/user').send();
     expect(status).toBe(401);
   });
-  
+
   it('Should fail with 401 token error', async () => {
     const { body } = await request(app).post('/user').set({ Authorization: `${token}` }).send();
     expect(body.error).toBe('Token error');
   });
-  
+
   it('Should fail with 401 token error', async () => {
     const { body } = await request(app).post('/user').set({ Authorization: `token ${token}` }).send();
     expect(body.error).toBe('Token malformatted');
   });
-  
+
   it('Should fail with 401 token error', async () => {
     const { body } = await request(app).post('/user').set({ Authorization: `Bearer token` }).send();
     expect(body.error).toBe('Token invalid');
   });
+});
 
+describe('Test User registry', () => {
   /** Test registry */
   it('Should fail without any fields', async () => {
     const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send();
@@ -53,17 +49,17 @@ describe('Register user', () => {
   });
 
   it('Should fail without email', async () => {
-    const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send({name: 'name1', password: 'pass1'});
+    const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send({ name: 'name1', password: 'pass1' });
     expect(status).toBe(400);
   });
 
   it('Should fail without name', async () => {
-    const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send({email: 'name2@email.com', password: 'pass2'});
+    const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send({ email: 'name2@email.com', password: 'pass2' });
     expect(status).toBe(400);
   });
-  
+
   it('Should fail without password', async () => {
-    const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send({name: 'name3', email: 'email3@email.com'});
+    const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send({ name: 'name3', email: 'email3@email.com' });
     expect(status).toBe(400);
   });
 
@@ -74,13 +70,15 @@ describe('Register user', () => {
     expect(body.user.name).toBe(userGenerated.name);
   });
 
-  it('Should receive an registration failed', async () => {
+  it('Should try register the same user and receive an registration failed', async () => {
     const userGenerated = generateUser();
     await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userGenerated);
     const { status } = await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userGenerated);
     expect(status).toBe(400);
   });
+});
 
+describe('Test User list', () => {
   /** Test list */
   it('Should get the user list', async () => {
     const { body } = await request(app).get('/user').set({ Authorization: `Bearer ${token}` }).send();
@@ -88,7 +86,7 @@ describe('Register user', () => {
   });
 
   it('Should get the 10 first users', async () => {
-    for(let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 10; i++) {
       let userGenerated = generateUser();
       await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userGenerated);
     }
@@ -112,17 +110,17 @@ describe('Register user', () => {
   });
 
   it('Should return the user searched by name', async () => {
-    await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userManuallyGenerated);
-    const { body } = await request(app).get('/user?q=newuser').set({ Authorization: `Bearer ${token}` }).send();
+    await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userGeneratedGlobally);
+    const { body } = await request(app).get(`/user?q=${userGeneratedGlobally.name}`).set({ Authorization: `Bearer ${token}` }).send();
     const [user] = body.users;
-    expect(user.name).toBe(userManuallyGenerated.name);
+    expect(user.name).toBe(userGeneratedGlobally.name);
   });
 
   it('Should return the user searched by email', async () => {
-    await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userManuallyGenerated);
-    const { body } = await request(app).get('/user?q=wonderful').set({ Authorization: `Bearer ${token}` }).send();
+    await request(app).post('/user').set({ Authorization: `Bearer ${token}` }).send(userGeneratedGlobally);
+    const { body } = await request(app).get(`/user?q=${userGeneratedGlobally.email}`).set({ Authorization: `Bearer ${token}` }).send();
     const [user] = body.users;
-    expect(user.name).toBe(userManuallyGenerated.name);
+    expect(user.name).toBe(userGeneratedGlobally.name);
   });
 
   it('Should return an empty array', async () => {
@@ -130,12 +128,14 @@ describe('Register user', () => {
     const users = body.users;
     expect(users).toStrictEqual([]);
   });
+});
 
+describe('Test get User', () => {
   /** Test get user */
   it('Should return the user by id', async () => {
-    let { body } = await request(app).get(`/user?q=${userManuallyGenerated.name}`).set({ Authorization: `Bearer ${token}` }).send();
+    let { body } = await request(app).get(`/user?q=${userGeneratedGlobally.name}`).set({ Authorization: `Bearer ${token}` }).send();
     const [userToFind] = body.users;
-    userManuallyGenerated.id = userToFind.id;
+    userGeneratedGlobally.id = userToFind.id;
     const data = await request(app).get(`/user/${userToFind.id}`).set({ Authorization: `Bearer ${token}` }).send();
     const { user } = data.body;
     expect(user.name).toBe(userToFind.name);
@@ -151,7 +151,9 @@ describe('Register user', () => {
     const { status } = await request(app).get(`/user/666`).set({ Authorization: `Bearer ${token}` }).send();
     expect(status).toBe(400);
   });
+});
 
+describe('Test delete User', () => {
   /** Test delete user */
   it('Should throw error with invalid objectId on delete', async () => {
     const { status } = await request(app).delete(`/user/666`).set({ Authorization: `Bearer ${token}` }).send();
@@ -161,7 +163,7 @@ describe('Register user', () => {
   it('Should not find the user by id', async () => {
     let data = await request(app).get('/user').set({ Authorization: `Bearer ${token}` }).send();
     const prevTotal = data.body.total;
-    
+
     await request(app).delete(`/user/6008ee91bd917e479ff1666e`).set({ Authorization: `Bearer ${token}` }).send();
 
     data = await request(app).get('/user').set({ Authorization: `Bearer ${token}` }).send();
@@ -173,45 +175,47 @@ describe('Register user', () => {
     let data = await request(app).get('/user?page=2').set({ Authorization: `Bearer ${token}` }).send();
     const [userToDelete] = data.body.users;
     const prevTotal = data.body.total;
-    
+
     await request(app).delete(`/user/${userToDelete.id}`).set({ Authorization: `Bearer ${token}` }).send();
 
     data = await request(app).get('/user').set({ Authorization: `Bearer ${token}` }).send();
     const currTotal = data.body.total;
     expect(currTotal).toBe(prevTotal - 1);
   });
+});
 
+describe('Test edit User', () => {
   /** Test edit user */
   it('Should throw error with invalid objectId on edit', async () => {
-    const { status } = await request(app).put(`/user/666`).set({ Authorization: `Bearer ${token}` }).send({...userManuallyGenerated, name: 'newUser'});
+    const { status } = await request(app).put(`/user/666`).set({ Authorization: `Bearer ${token}` }).send({ ...userGeneratedGlobally, name: 'newUser' });
     expect(status).toBe(400);
   });
 
   it('Should not find the user by id', async () => {
-    const { body } = await request(app).put(`/user/6008ee91bd917e479ff1666e`).set({ Authorization: `Bearer ${token}` }).send({...userManuallyGenerated, name: 'newUser'});
+    const { body } = await request(app).put(`/user/6008ee91bd917e479ff1666e`).set({ Authorization: `Bearer ${token}` }).send({ ...userGeneratedGlobally, name: 'newUser' });
 
     expect(body.user).toBeFalsy();
   });
-  
+
   it('Should edit only the user name', async () => {
     const data = await request(app).get('/user').set({ Authorization: `Bearer ${token}` }).send();
     const [userToModity] = data.body.users;
-    await request(app).put(`/user/${userToModity.id}`).set({ Authorization: `Bearer ${token}` }).send({ name: 'Administrator'});
+    await request(app).put(`/user/${userToModity.id}`).set({ Authorization: `Bearer ${token}` }).send({ name: 'Administrator' });
     const { body } = await request(app).get(`/user/${userToModity.id}`).set({ Authorization: `Bearer ${token}` }).send();
 
-    expect(body.user).toMatchObject({...userToModity, name: 'Administrator'});
+    expect(body.user).toMatchObject({ ...userToModity, name: 'Administrator' });
   });
 
   it('Should edit only the user email', async () => {
-    await request(app).put(`/user/${userManuallyGenerated.id}`).set({ Authorization: `Bearer ${token}` }).send({ email: 'updated@email'});
-    const { body } = await request(app).get(`/user/${userManuallyGenerated.id}`).set({ Authorization: `Bearer ${token}` }).send();
+    await request(app).put(`/user/${userGeneratedGlobally.id}`).set({ Authorization: `Bearer ${token}` }).send({ email: 'updated@email' });
+    const { body } = await request(app).get(`/user/${userGeneratedGlobally.id}`).set({ Authorization: `Bearer ${token}` }).send();
 
-    expect({...body.user, password: userManuallyGenerated.password}).toMatchObject({...userManuallyGenerated, email: 'updated@email'});
+    expect({ ...body.user, password: userGeneratedGlobally.password }).toMatchObject({ ...userGeneratedGlobally, email: 'updated@email' });
   });
 
   it('Should edit an user name', async () => {
-    await request(app).put(`/user/${userManuallyGenerated.id}`).set({ Authorization: `Bearer ${token}` }).send({...userManuallyGenerated, name: 'userUpdated'});
-    const { body } = await request(app).get(`/user/${userManuallyGenerated.id}`).set({ Authorization: `Bearer ${token}` }).send();
+    await request(app).put(`/user/${userGeneratedGlobally.id}`).set({ Authorization: `Bearer ${token}` }).send({ ...userGeneratedGlobally, name: 'userUpdated' });
+    const { body } = await request(app).get(`/user/${userGeneratedGlobally.id}`).set({ Authorization: `Bearer ${token}` }).send();
 
     expect(body.user.name).toBe('userUpdated');
   });

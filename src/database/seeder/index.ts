@@ -1,7 +1,7 @@
 import { Document } from 'mongoose';
 import mongoose from '..';
 import { User } from '../../models/User';
-import  * as user from './data-to-seed/user.json';
+import * as user from './data-to-seed/user.json';
 
 interface ISeeder extends Document {
   createdAt?: Date;

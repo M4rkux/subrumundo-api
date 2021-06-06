@@ -5,8 +5,11 @@ import  * as defaultUser from '../../src/database/seeder/data-to-seed/user.json'
 import { initSeed } from '../../src/database/seeder';
 
 beforeAll(async () => await dbHandler.connect());
-beforeEach(async () => await initSeed());
-afterEach(async () => await dbHandler.clearDatabase());
+beforeEach(async () => {
+  await dbHandler.clearDatabase();
+  await initSeed();
+});
+afterEach(async () => dbHandler.clearDatabase());
 afterAll(async () => await dbHandler.closeDatabase());
 
 describe('Test the login', () => {
