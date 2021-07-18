@@ -73,7 +73,7 @@ describe('Test patron registry', () => {
   });
 });
 
-describe('Test patron registry', () => {
+describe('Test patron list', () => {
   /** Test list */
   it('Should get the patron list', async () => {
     const { body: { patrons } } = await request(app).get('/patron').set({ Authorization: `Bearer ${token}` }).send();
@@ -139,7 +139,7 @@ describe('Test get Patron', () => {
 });
 
 describe('Test delete Patron', () => {
-  /** Test delete user */
+  /** Test delete patron */
   it('Should throw error with invalid objectId on delete', async () => {
     const { status } = await request(app).delete(`/patron/666`).set({ Authorization: `Bearer ${token}` }).send();
     expect(status).toBe(400);

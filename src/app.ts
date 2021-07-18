@@ -2,10 +2,7 @@ import { join } from 'path';
 import dotenv from 'dotenv';
 import express from 'express';
 
-import authenticationRouter from './routes/authentication.router';
-import userRouter from './routes/user.router';
-import subscriberRouter from './routes/subscriber.router';
-import patronRouter from './routes/patron.router';
+import {authenticationRouter, patronLogRouter, patronRouter, subscriberRouter, userRouter} from './routes';
 
 const env = process.env.NODE_ENV;
 const configPath = join(__dirname, '../', `.env.${env}`);
@@ -21,5 +18,6 @@ app.use('/authentication', authenticationRouter);
 app.use('/user', userRouter);
 app.use('/subscriber', subscriberRouter);
 app.use('/patron', patronRouter);
+app.use('/patron-log', patronLogRouter);
 
 export default app;

@@ -3,6 +3,12 @@ import bcrypt from 'bcryptjs';
 
 import mongoose from '../database';
 
+export interface IUserParams extends Document {
+  name?: string;
+  email?: string;
+  password?: string;
+}
+
 export interface IUser extends Document {
   name: string;
   email: string;

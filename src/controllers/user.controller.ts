@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { isValidObjectId } from 'mongoose';
-import { LIMIT } from '../constants';
-import { User, UserView, IUser, IUserQuery } from '../models/User';
+import { RECORDS_PER_PAGE } from '../constants';
+import { User, UserView, IUser, IUserQuery, IUserParams } from '../models/User';
 import { verifyMandatoryFields } from '../utils/fields';
 
 export async function register(req: Request, res: Response) {
@@ -26,7 +26,7 @@ export async function list(req: Request, res: Response) {
 
   const q = req.query.q?.toString();
   const page = Number(req.query.page) <= 0 ? 1 : Number(req.query.page);
-  const skip = (page - 1) * LIMIT;
+  const skip = (page - 1) * RECORDS_PER_PAGE;
 
   let query = {};
   let $or: IUserQuery[] = [];
@@ -36,7 +36,7 @@ export async function list(req: Request, res: Response) {
     query = { $or };
   }
 
-  const users = await User.find(query).limit(LIMIT).skip(skip);
+  const users = await User.find(query).limit(RECORDS_PER_PAGE).skip(skip);
   const total = await User.countDocuments(query);
   return res.status(200).send({
     users: users.map((user: IUser) => UserView.render(user)),
@@ -81,14 +81,7 @@ export async function deleteOne(req: Request, res: Response) {
 export async function updateOne(req: Request, res: Response) {
 
   const { id } = req.params;
-  const newUserData = req.body;
-
-  if (!newUserData.name)
-    delete newUserData.name;
-  if (!newUserData.email)
-    delete newUserData.email;
-  if (!newUserData.password)
-    delete newUserData.password;
+  const newUserData = _purgeUserData(req.body);
 
   if (!isValidObjectId(id))
     return res.status(400).send({ error: 'Invalid id' });
@@ -101,4 +94,15 @@ export async function updateOne(req: Request, res: Response) {
     user: UserView.render(user)
   });
 
+}
+
+function _purgeUserData(userData: IUserParams) {
+  if (!userData.name)
+    delete userData.name;
+  if (!userData.email)
+    delete userData.email;
+  if (!userData.password)
+    delete userData.password;
+
+  return userData;
 }

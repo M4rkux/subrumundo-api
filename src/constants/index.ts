@@ -1,1 +1,1 @@
-export const LIMIT = 10;
+export const RECORDS_PER_PAGE = 10;

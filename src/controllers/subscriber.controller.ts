@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { isValidObjectId } from 'mongoose';
-import { LIMIT } from '../constants';
+import { RECORDS_PER_PAGE } from '../constants';
 import { Patron } from '../models/Patron';
 import { ISubscriber, ISubscriberQuery, Subscriber, SubscriberView } from '../models/Subscriber';
 import { verifyMandatoryFields } from '../utils/fields';
@@ -26,7 +26,7 @@ export async function list(req: Request, res: Response) {
 
   const q = req.query.q?.toString();
   const page = Number(req.query.page) <= 0 ? 1 : Number(req.query.page);
-  const skip = (page - 1) * LIMIT;
+  const skip = (page - 1) * RECORDS_PER_PAGE;
 
   let query = {};
   let $or: ISubscriberQuery[] = [];
@@ -36,7 +36,7 @@ export async function list(req: Request, res: Response) {
     query = { $or };
   }
 
-  const subscribers = await Subscriber.find(query).limit(LIMIT).skip(skip);
+  const subscribers = await Subscriber.find(query).limit(RECORDS_PER_PAGE).skip(skip);
   const total = await Subscriber.countDocuments(query);
   return res.status(200).send({
     subscribers: subscribers.map((subscriber: ISubscriber) => SubscriberView.render(subscriber)),

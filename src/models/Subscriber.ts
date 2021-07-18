@@ -2,6 +2,11 @@ import { Document } from 'mongoose';
 
 import mongoose from '../database';
 
+export interface ISubscriberParam extends Document {
+  name?: string;
+  email?: string;
+}
+
 export interface ISubscriber extends Document {
   name: string;
   email: string;
