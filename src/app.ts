@@ -1,6 +1,7 @@
 import { join } from 'path';
 import dotenv from 'dotenv';
 import express from 'express';
+import { initSeed } from './database/seeder';
 
 import {authenticationRouter, patronLogRouter, patronRouter, subscriberRouter, userRouter} from './routes';
 
@@ -13,6 +14,10 @@ dotenv.config({
 
 const app = express();
 app.use(express.json());
+
+if(env === 'dev') {
+  initSeed();
+}
 
 app.use('/authentication', authenticationRouter);
 app.use('/user', userRouter);

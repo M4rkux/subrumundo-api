@@ -1,7 +1,8 @@
 Database:
- [Done] Users (admin do site)
- [WIP] Subscribers (usuários que clicaram para logar pelo google)
- [Done] Patrons (Lista de e-mail dos patrões)
- [TODO] Episodes (Cadastro completo dos episódios podendo ter vindo do RSS ou cadastrado direto pelo site, 
+ [DONE] Users (admin do site)
+ [WIP - Need integrations] Subscribers (usuários que clicaram para logar pelo google)
+ [DONE] Patrons (Lista de e-mail dos patrões)
+ [DONE] PatronLogs (Log de quando começou/deixou de ser patrão)
+ [WIP] Episodes (Cadastro completo dos episódios podendo ter vindo do RSS ou cadastrado direto pelo site, 
  podendo ser episódio exclusivo dos patrões)
- [TODO - Future] PatreonLogs (Log de quando começou/deixou de ser patrão)
+  - Routes, Controller, Tests, RSS-leader
